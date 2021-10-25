@@ -19,6 +19,8 @@
     "obsidian": "^0.12.17",
     "rollup": "^2.32.1",
     "rollup-plugin-copy": "^3.4.0",
+    "rollup-plugin-scss": "^3.0.0",
+    "sass": "^1.43.3",
     "tslib": "^2.2.0",
     "typescript": "^4.2.4"
   }

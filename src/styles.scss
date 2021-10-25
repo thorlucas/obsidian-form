@@ -1,0 +1,22 @@
+.obsidian-form {
+	margin: 12px auto;
+	padding: 24px 20px;
+	width: 80%;
+
+	border-radius: 8px;
+	
+	background-color: var(--background-primary-alt);
+
+	.form-title {
+		margin-top: 0;	
+	}
+
+	.form-group {
+		label {
+			display: block;
+			font-size: medium;
+			padding-bottom: 4px;
+			padding-left: 4px;
+		}
+	}
+}

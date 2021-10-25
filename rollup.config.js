@@ -2,6 +2,7 @@ import typescript from '@rollup/plugin-typescript';
 import {nodeResolve} from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import copy from 'rollup-plugin-copy';
+import scss from 'rollup-plugin-scss';
 import dotenv from 'dotenv';
 import manifest from './manifest.json';
 
@@ -36,10 +37,12 @@ export default {
 		typescript(),
 		nodeResolve({browser: true}),
 		commonjs(),
+		scss({
+			output: `${pluginDir}/styles.css`,
+		}),
 		copy({
 			targets: [
 				{ src: 'manifest.json', dest: pluginDir },
-				{ src: 'styles.css', dest: pluginDir },
 			],
 		}),
 	]

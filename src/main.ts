@@ -1,4 +1,6 @@
-import { App, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, MarkdownPostProcessorContext, parseYaml, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { Form, FormElement, isForm, isFormElement } from './form';
+import './styles.scss';
 
 interface MyPluginSettings {
 	mySetting: string;
@@ -16,41 +18,12 @@ export default class MyPlugin extends Plugin {
 
 		await this.loadSettings();
 
-		this.addRibbonIcon('dice', 'Sample Plugin', () => {
-			new Notice('This is a notice!');
-		});
-
-		this.addStatusBarItem().setText('Status Bar Text');
-
-		this.addCommand({
-			id: 'open-sample-modal',
-			name: 'Open Sample Modal',
-			// callback: () => {
-			// 	console.log('Simple Callback');
-			// },
-			checkCallback: (checking: boolean) => {
-				let leaf = this.app.workspace.activeLeaf;
-				if (leaf) {
-					if (!checking) {
-						new SampleModal(this.app).open();
-					}
-					return true;
-				}
-				return false;
-			}
-		});
+		this.registerMarkdownCodeBlockProcessor(
+			'form',
+			this.postProcessor.bind(this),
+		);
 
 		this.addSettingTab(new SampleSettingTab(this.app, this));
-
-		this.registerCodeMirror((cm: CodeMirror.Editor) => {
-			console.log('codemirror', cm);
-		});
-
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			console.log('click', evt);
-		});
-
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
 	}
 
 	onunload() {
@@ -64,21 +37,54 @@ export default class MyPlugin extends Plugin {
 	async saveSettings() {
 		await this.saveData(this.settings);
 	}
-}
 
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
+	async postProcessor(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
+		console.log(source);
+		console.log(ctx);
+
+		const form: Form = this.parseFormDefinition(source);
+		console.log(form);
+
+		el.empty();
+
+		el.createDiv({
+			cls: 'obsidian-form',
+		}, (el: HTMLElement) => {
+			if (form.title) {
+				el.createEl('h2', {
+					cls: 'form-title',
+					text: form.title,
+				});
+			}
+
+			form.elements.forEach((formEl: FormElement) => {
+				if (formEl.type == 'input.text') {
+					el.createDiv({ cls: 'form-group' }, (el) => {
+						if (formEl.label) {
+							el.createEl('label', {
+								text: formEl.label,
+							});
+						}
+						el.createEl('input', {
+							type: 'text',
+						});
+					});
+				}
+			});
+		});
 	}
 
-	onOpen() {
-		let {contentEl} = this;
-		contentEl.setText('Woah!');
-	}
-
-	onClose() {
-		let {contentEl} = this;
-		contentEl.empty();
+	/**
+	 * @throws YAMLParseError
+	 * @throws SyntaxError
+	 */
+	parseFormDefinition(source: string): Form {
+		const parsed: any = parseYaml(source);
+		if (isForm(parsed)) {
+			return parsed;
+		} else {
+			throw new SyntaxError("Could not parse form syntax.");
+		}
 	}
 }
 
