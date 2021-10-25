@@ -1,5 +1,6 @@
 import { App, MarkdownPostProcessorContext, parseYaml, Plugin, PluginSettingTab, Setting } from 'obsidian';
 import { Form, FormElement, isForm, isFormElement } from './form';
+import { IMetaEditApi } from './metaedit';
 import './styles.scss';
 
 interface MyPluginSettings {
@@ -12,9 +13,11 @@ const DEFAULT_SETTINGS: MyPluginSettings = {
 
 export default class MyPlugin extends Plugin {
 	settings: MyPluginSettings;
+	metaedit: IMetaEditApi;
 
 	async onload() {
 		console.log('loading plugin');
+		
 
 		await this.loadSettings();
 
@@ -45,6 +48,14 @@ export default class MyPlugin extends Plugin {
 		const form: Form = this.parseFormDefinition(source);
 		console.log(form);
 
+		if (!this.app.plugins.plugins['metaedit']) {
+			throw new Error("This plugin requires MetaEdit!");
+		}
+
+		this.metaedit = this.app.plugins.plugins.metaedit.api as IMetaEditApi;
+
+		this.metaedit.createYamlProperty('aroma', null, ctx.sourcePath);
+
 		el.empty();
 
 		el.createDiv({
@@ -65,9 +76,13 @@ export default class MyPlugin extends Plugin {
 								text: formEl.label,
 							});
 						}
-						el.createEl('input', {
+						const input = el.createEl('input', {
 							type: 'text',
 						});
+						input.onblur = (ev: FocusEvent) => {
+							console.log(`Blurred with ${input.value}`);
+							this.metaedit.update('aroma', input.value, ctx.sourcePath);
+						};
 					});
 				}
 			});
