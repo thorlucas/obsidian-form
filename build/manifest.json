@@ -1,0 +1,10 @@
+{
+	"id": "obsidian-form",
+	"name": "Form",
+	"version": "1.0.1",
+	"minAppVersion": "0.9.12",
+	"description": "Allows you to edit forms",
+	"author": "Obsidian",
+	"authorUrl": "https://obsidian.md/about",
+	"isDesktopOnly": false
+}

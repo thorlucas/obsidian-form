@@ -9,11 +9,11 @@ import manifest from './manifest.json';
 dotenv.config();
 
 const pluginName = manifest['id'];
+const production = (process.env.BUILD === 'production');
+const testVault = process.env.TEST_VAULT;
+const pluginDir = `${testVault}/.obsidian/plugins/${pluginName}`;
 
-const isProd = (process.env.BUILD === 'production');
-
-const vault = process.env.TEST_VAULT || './vault';
-const pluginDir = `${vault}/.obsidian/plugins/${pluginName}`;
+const buildDir = 'build';
 
 const banner = 
 `/*
@@ -25,25 +25,38 @@ if you want to view the source visit the plugins github repository
 export default {
 	input: 'src/main.ts',
 	output: {
-		dir: pluginDir,
+		dir: buildDir,
 		sourcemap: 'inline',
-		sourcemapExcludeSources: isProd,
+		sourcemapExcludeSources: production,
 		format: 'cjs',
 		exports: 'default',
 		banner,
 	},
 	external: ['obsidian'],
 	plugins: [
-		typescript(),
-		nodeResolve({browser: true}),
+		nodeResolve({
+			browser: true
+		}),
 		commonjs(),
+		typescript({
+			sourceMap: !production,
+			inlineSources: !production,
+		}),
 		scss({
-			output: `${pluginDir}/styles.css`,
+			output: `${buildDir}/styles.css`,
 		}),
 		copy({
 			targets: [
-				{ src: 'manifest.json', dest: pluginDir },
+				{ src: 'manifest.json', dest: buildDir },
 			],
+			copyOnce: true,
 		}),
+		...!production ? [
+			copy({
+				targets: [
+					{ src: `${buildDir}/*`, dest: pluginDir },
+				],
+			}),
+		] : []
 	]
 };
