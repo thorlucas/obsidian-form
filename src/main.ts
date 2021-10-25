@@ -1,6 +1,7 @@
 import { App, MarkdownPostProcessorContext, parseYaml, Plugin, PluginSettingTab, Setting } from 'obsidian';
 import { Form, FormElement, isForm, isFormElement } from './form';
-import { IMetaEditApi } from './metaedit';
+import type { IMetaEditApi } from './metaedit';
+import FormEl from './Form.svelte';
 import './styles.scss';
 
 interface MyPluginSettings {
@@ -58,35 +59,42 @@ export default class MyPlugin extends Plugin {
 
 		el.empty();
 
-		el.createDiv({
-			cls: 'obsidian-form',
-		}, (el: HTMLElement) => {
-			if (form.title) {
-				el.createEl('h2', {
-					cls: 'form-title',
-					text: form.title,
-				});
-			}
-
-			form.elements.forEach((formEl: FormElement) => {
-				if (formEl.type == 'input.text') {
-					el.createDiv({ cls: 'form-group' }, (el) => {
-						if (formEl.label) {
-							el.createEl('label', {
-								text: formEl.label,
-							});
-						}
-						const input = el.createEl('input', {
-							type: 'text',
-						});
-						input.onblur = (ev: FocusEvent) => {
-							console.log(`Blurred with ${input.value}`);
-							this.metaedit.update('aroma', input.value, ctx.sourcePath);
-						};
-					});
-				}
-			});
+		const formEl = new FormEl({
+			target: el,
+			props: {
+				form: form,
+			},
 		});
+
+		//el.createDiv({
+			//cls: 'obsidian-form',
+		//}, (el: HTMLElement) => {
+			//if (form.title) {
+				//el.createEl('h2', {
+					//cls: 'form-title',
+					//text: form.title,
+				//});
+			//}
+
+			//form.elements.forEach((formEl: FormElement) => {
+				//if (formEl.type == 'input.text') {
+					//el.createDiv({ cls: 'form-group' }, (el) => {
+						//if (formEl.label) {
+							//el.createEl('label', {
+								//text: formEl.label,
+							//});
+						//}
+						//const input = el.createEl('input', {
+							//type: 'text',
+						//});
+						//input.onblur = (ev: FocusEvent) => {
+							//console.log(`Blurred with ${input.value}`);
+							//this.metaedit.update('aroma', input.value, ctx.sourcePath);
+						//};
+					//});
+				//}
+			//});
+		//});
 	}
 
 	/**

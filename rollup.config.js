@@ -3,6 +3,8 @@ import {nodeResolve} from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import copy from 'rollup-plugin-copy';
 import scss from 'rollup-plugin-scss';
+import svelte from 'rollup-plugin-svelte';
+import sveltePreprocess from 'svelte-preprocess';
 import dotenv from 'dotenv';
 import manifest from './manifest.json';
 
@@ -34,14 +36,21 @@ export default {
 	},
 	external: ['obsidian'],
 	plugins: [
+		typescript({
+			//sourceMap: !production,
+			//inlineSources: !production,
+		}),
+		svelte({
+			preprocess: sveltePreprocess({ sourceMap: !production }),
+			compilerOptions: {
+				dev: !production,
+			}
+		}),
 		nodeResolve({
-			browser: true
+			browser: true,
+			dedupe: ['svelte'],
 		}),
 		commonjs(),
-		typescript({
-			sourceMap: !production,
-			inlineSources: !production,
-		}),
 		scss({
 			output: `${buildDir}/styles.css`,
 		}),
