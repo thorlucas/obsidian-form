@@ -37,8 +37,8 @@ export default {
 	external: ['obsidian'],
 	plugins: [
 		typescript({
-			//sourceMap: !production,
-			//inlineSources: !production,
+			sourceMap: !production,
+			inlineSources: !production,
 		}),
 		svelte({
 			preprocess: sveltePreprocess({ sourceMap: !production }),
