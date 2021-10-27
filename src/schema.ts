@@ -5,6 +5,33 @@ export type FormDef = {
 	props: { [key: string]: SchemaProp },
 }
 
+export function isFormDef(obj: any): obj is FormDef {
+	return (
+		(typeof obj === 'object') &&
+		(obj['title'] === undefined || typeof obj['title'] === 'string') &&
+		(obj['root']  === undefined || typeof obj['root']  === 'string') &&
+		(obj['types'] === undefined || isPropsMap(obj['types'])) &&
+		(isPropsMap(obj['props']))
+	);
+}
+
+function isPropsMap(obj: any): obj is { [key: string]: SchemaProp } {
+	return (
+		(typeof obj === 'object') &&
+		(Object.keys(obj).every(key => (
+			(typeof key === 'string') &&
+			(isSchemaProp(obj[key]))
+		) === true))
+	);
+}
+
+function isSchemaProp(obj: any): obj is SchemaProp {
+	// TODO
+	return (
+		(typeof obj === 'object')
+	);
+}
+
 type LabeledProp = {
 	label?: string,
 	description?: string,

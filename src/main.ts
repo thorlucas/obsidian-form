@@ -1,5 +1,5 @@
 import { App, MarkdownPostProcessorContext, parseYaml, Plugin, PluginSettingTab, Setting, TFile } from 'obsidian';
-import { Form, FormElement, isForm, isFormElement } from './form';
+import { FormDef, isFormDef } from './schema';
 import type { IMetaEditApi } from './metaedit';
 import FormEl from './UI/Form.svelte';
 import './styles.scss';
@@ -55,7 +55,7 @@ export default class MyPlugin extends Plugin {
 	}
 
 	async postProcessor(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
-		const form: Form = this.parseFormDefinition(source);
+		const form: FormDef = this.parseFormDefinition(source);
 
 		el.empty();
 
@@ -78,9 +78,9 @@ export default class MyPlugin extends Plugin {
 	 * @throws YAMLParseError
 	 * @throws SyntaxError
 	 */
-	parseFormDefinition(source: string): Form {
+	parseFormDefinition(source: string): FormDef {
 		const parsed: any = parseYaml(source);
-		if (isForm(parsed)) {
+		if (isFormDef(parsed)) {
 			return parsed;
 		} else {
 			throw new SyntaxError("Could not parse form syntax.");
