@@ -1,7 +1,7 @@
-import { App, MarkdownPostProcessorContext, parseYaml, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, MarkdownPostProcessorContext, parseYaml, Plugin, PluginSettingTab, Setting, TFile } from 'obsidian';
 import { Form, FormElement, isForm, isFormElement } from './form';
 import type { IMetaEditApi } from './metaedit';
-import FormEl from './Form.svelte';
+import FormEl from './UI/Form.svelte';
 import './styles.scss';
 
 interface MyPluginSettings {
@@ -14,7 +14,19 @@ const DEFAULT_SETTINGS: MyPluginSettings = {
 
 export default class MyPlugin extends Plugin {
 	settings: MyPluginSettings;
-	metaedit: IMetaEditApi;
+	private _metaedit: IMetaEditApi = null;
+
+	private get metaedit(): IMetaEditApi {
+		if (this._metaedit === null) {
+			if (!this.app.plugins.plugins['metaedit']) {
+				throw new Error("This plugin requires MetaEdit!");
+			}
+
+			this._metaedit = this.app.plugins.plugins.metaedit.api as IMetaEditApi;
+		}
+
+		return this._metaedit;
+	}
 
 	async onload() {
 		console.log('loading plugin');
@@ -43,58 +55,23 @@ export default class MyPlugin extends Plugin {
 	}
 
 	async postProcessor(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
-		console.log(source);
-		console.log(ctx);
-
 		const form: Form = this.parseFormDefinition(source);
-		console.log(form);
-
-		if (!this.app.plugins.plugins['metaedit']) {
-			throw new Error("This plugin requires MetaEdit!");
-		}
-
-		this.metaedit = this.app.plugins.plugins.metaedit.api as IMetaEditApi;
-
-		this.metaedit.createYamlProperty('aroma', null, ctx.sourcePath);
 
 		el.empty();
 
-		const formEl = new FormEl({
+		new FormEl({
 			target: el,
 			props: {
 				form: form,
+				update: (property: string, value: string) => {
+					this.updateProperty(ctx.sourcePath, property, value);
+				},
 			},
 		});
+	}
 
-		//el.createDiv({
-			//cls: 'obsidian-form',
-		//}, (el: HTMLElement) => {
-			//if (form.title) {
-				//el.createEl('h2', {
-					//cls: 'form-title',
-					//text: form.title,
-				//});
-			//}
-
-			//form.elements.forEach((formEl: FormElement) => {
-				//if (formEl.type == 'input.text') {
-					//el.createDiv({ cls: 'form-group' }, (el) => {
-						//if (formEl.label) {
-							//el.createEl('label', {
-								//text: formEl.label,
-							//});
-						//}
-						//const input = el.createEl('input', {
-							//type: 'text',
-						//});
-						//input.onblur = (ev: FocusEvent) => {
-							//console.log(`Blurred with ${input.value}`);
-							//this.metaedit.update('aroma', input.value, ctx.sourcePath);
-						//};
-					//});
-				//}
-			//});
-		//});
+	async updateProperty(file: string | TFile, property: string, value: string) {
+		this.metaedit.update(property, value, file);
 	}
 
 	/**
