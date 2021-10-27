@@ -59,15 +59,15 @@ export default class MyPlugin extends Plugin {
 
 		el.empty();
 
-		new FormEl({
-			target: el,
-			props: {
-				form: form,
-				update: (property: string, value: string) => {
-					this.updateProperty(ctx.sourcePath, property, value);
-				},
-			},
-		});
+		//new FormEl({
+			//target: el,
+			//props: {
+				//form: form,
+				//update: (property: string, value: string) => {
+					//this.updateProperty(ctx.sourcePath, property, value);
+				//},
+			//},
+		//});
 	}
 
 	async updateProperty(file: string | TFile, property: string, value: string) {
@@ -81,6 +81,8 @@ export default class MyPlugin extends Plugin {
 	parseFormDefinition(source: string): FormDef {
 		const parsed: any = parseYaml(source);
 		if (isFormDef(parsed)) {
+			console.log("Parsed form:");
+			console.log(parsed);
 			return parsed;
 		} else {
 			throw new SyntaxError("Could not parse form syntax.");
