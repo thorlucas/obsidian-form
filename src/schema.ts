@@ -25,10 +25,13 @@ function isPropsMap(obj: any): obj is { [key: string]: SchemaProp } {
 	);
 }
 
-function isSchemaProp(obj: any): obj is SchemaProp {
-	// TODO
+function isSchemaProp<T extends SchemaProp['type']>(obj: any, type: T): obj is SchemaPropOfType<T>;
+function isSchemaProp(obj: any): obj is SchemaProp;
+function isSchemaProp(obj: any, type?: string) {
+	// TODO: Validate types
 	return (
-		(typeof obj === 'object')
+		(typeof obj === 'object') && 
+		(type === undefined || obj['type'] === type)
 	);
 }
 
@@ -44,7 +47,7 @@ type LabeledProp = {
  * @prop props - An object mapping child property keys to schema props.
  */
 export type ObjectProp = LabeledProp & {
-	type?: 'object',
+	type: 'object',
 	required?: string[],
 	props: { [key: string]: SchemaProp },
 }
@@ -84,3 +87,5 @@ export type SchemaProp =
 	| IntegerProp
 	| StringProp
 	| BooleanProp;
+
+export type SchemaPropOfType<T extends SchemaProp['type']> = Extract<SchemaProp, SchemaProp & { type: T }>;
